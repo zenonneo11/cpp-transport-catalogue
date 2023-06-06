@@ -4,7 +4,7 @@
 namespace transport_catalogue {
     namespace catalogue{
         
-        void TransportCatalogue::AddBus(Bus bus) {
+        void TransportCatalogue::AddBus(Bus&& bus) {
             buses_.push_back(std::move(bus));
             bus_index_[buses_.back().name] = &buses_.back();
             for (auto stop : buses_.back().stops) {
@@ -12,7 +12,7 @@ namespace transport_catalogue {
             }
         }
 
-        void TransportCatalogue::AddStop(Stop stop) {
+        void TransportCatalogue::AddStop(Stop&& stop) {
             if (!stop_index_.count(stop.name)) {
                 stops_.push_back(std::move(stop));
                 stop_index_[stops_.back().name] = &stops_.back();
@@ -35,7 +35,7 @@ namespace transport_catalogue {
             return stop_index_.at(stop);
         }
 
-        std::pair<bool, std::set<std::string_view>> TransportCatalogue::GetBusesForStop(std::string_view stop) const {
+        TransportCatalogue::BusesForStopResponce TransportCatalogue::GetBusesForStop(std::string_view stop) const {
             if (stop_to_buses.count(stop)) {
                 return { true, stop_to_buses.at(stop) };
             }

@@ -61,8 +61,20 @@ namespace transport_catalogue {
             }
             return res;
         }
-    
-    }
-    
+
+        void StatHandler(std::vector<std::string> raw_querys, TransportCatalogue& tc) {
+            for (auto&& responce : ParseStatQuerys(raw_querys, tc)) {
+                switch (responce.r_type)
+                {
+                case ResponseType::BUS_RESPONSE:
+                    PrintBusResponce(responce, std::cout);
+                    break;
+                case ResponseType::STOP_RESPONSE:
+                    PrintStopResponce(responce, std::cout);
+                    break;
+                }
+            }
+        }    
+    }    
 }
 

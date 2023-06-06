@@ -25,12 +25,15 @@ namespace transport_catalogue {
             std::set<std::string_view> buses_for_stop;
         };
 
+
+
         void PrintBusResponce(const Response& response, std::ostream& out);
 
         void PrintStopResponce(const Response& response, std::ostream& out);
 
         std::vector<Response> ParseStatQuerys(std::vector<std::string> raw_querys, TransportCatalogue& tc);
     
+        void StatHandler(std::vector<std::string> raw_querys, TransportCatalogue& tc);
     }
     
 }

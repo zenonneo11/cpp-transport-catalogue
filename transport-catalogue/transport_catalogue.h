@@ -26,16 +26,21 @@ namespace transport_catalogue {
 
         class TransportCatalogue {
 
-            public:
-            void AddBus(Bus bus);
+            struct BusesForStopResponce {
+                bool is_exist;
+                std::set < std::string_view> buses;
+            };
 
-            void AddStop(Stop stop);
+            public:
+            void AddBus(Bus&& bus);
+
+            void AddStop(Stop&& stop);
 
             const Bus& GetBus(std::string_view bus) const;
 
             const Stop* GetStop(std::string_view stop) const;
 
-            std::pair<bool, std::set<std::string_view>> GetBusesForStop(std::string_view stop) const;
+            BusesForStopResponce GetBusesForStop(std::string_view stop) const;
             
             void SetDistance(const Stop* s1, const Stop* s2, int distance);
 
