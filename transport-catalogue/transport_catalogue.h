@@ -6,30 +6,12 @@
 #include <string>
 #include <unordered_map>
 #include "geo.h"
-
+#include "domain.h"
 namespace transport_catalogue {
     namespace catalogue{
         using namespace geo;
 
-        struct Stop {
-            std::string name;
-            Coordinates coordinates;
-
-        };
-
-        struct Bus {
-            bool is_exists = true;
-            std::string name;
-            bool is_loop;
-            std::vector<const Stop*> stops;
-        };
-
         class TransportCatalogue {
-
-            struct BusesForStopResponce {
-                bool is_exist;
-                std::set < std::string_view> buses;
-            };
 
             public:
             void AddBus(Bus&& bus);
@@ -40,12 +22,15 @@ namespace transport_catalogue {
 
             const Stop* GetStop(std::string_view stop) const;
 
-            BusesForStopResponce GetBusesForStop(std::string_view stop) const;
+            const std::set<std::string_view>& GetBusesForStop(std::string_view stop) const;
             
             void SetDistance(const Stop* s1, const Stop* s2, int distance);
 
             int GetDistance(const Stop* s1, const Stop* s2) const;
-            
+
+            std::vector<const Bus*> GetAllBuses() const;
+
+
             private:
             std::deque<Stop> stops_;
             std::deque<Bus> buses_;
@@ -61,9 +46,7 @@ namespace transport_catalogue {
                 }
                 std::hash<const void*> hasher;
             };            
-            std::unordered_map<std::pair<const Stop*, const Stop*>, int, StopDistanceHasher> stops_distance;
-            
-            
+            std::unordered_map<std::pair<const Stop*, const Stop*>, int, StopDistanceHasher> stops_distance;                       
         };            
     }    
 }

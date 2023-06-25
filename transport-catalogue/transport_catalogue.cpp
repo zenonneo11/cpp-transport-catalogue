@@ -1,9 +1,9 @@
-
+#include <algorithm>
 #include "transport_catalogue.h"
 
 namespace transport_catalogue {
-    namespace catalogue{
-        
+    namespace catalogue {
+
         void TransportCatalogue::AddBus(Bus&& bus) {
             buses_.push_back(std::move(bus));
             bus_index_[buses_.back().name] = &buses_.back();
@@ -18,7 +18,7 @@ namespace transport_catalogue {
                 stop_index_[stops_.back().name] = &stops_.back();
             }
         }
-    
+
         const Bus& TransportCatalogue::GetBus(std::string_view bus) const {
             if (bus_index_.count(bus)) {
                 return *(bus_index_.at(bus));
@@ -32,21 +32,36 @@ namespace transport_catalogue {
         }
 
         const Stop* TransportCatalogue::GetStop(std::string_view stop) const {
-            return stop_index_.at(stop);
-        }
-
-        TransportCatalogue::BusesForStopResponce TransportCatalogue::GetBusesForStop(std::string_view stop) const {
-            if (stop_to_buses.count(stop)) {
-                return { true, stop_to_buses.at(stop) };
-            }
-            else if (stop_index_.count(stop)) {
-                return { true, {} };
+            if (stop_index_.count(stop)) {
+                return (stop_index_.at(stop));
             }
             else
             {
-                return { false, {} };
+                static Stop stop_;
+                stop_.is_exists = false;
+                stop_.name = stop;
+                return &stop_;
             }
         }
+
+        std::vector<const Bus*> TransportCatalogue::GetAllBuses() const {
+            std::vector<const Bus*> res;
+            res.reserve(buses_.size());
+            std::for_each(buses_.begin(), buses_.end(), [&res](const Bus& bus) { if (!bus.stops.empty()) res.push_back(&bus); });
+            std::sort(res.begin(), res.end(), [](const Bus* lhs, const Bus* rhs) { return lhs->name < rhs->name; });
+            return res;
+        }
+
+
+        const std::set<std::string_view>& TransportCatalogue::GetBusesForStop(std::string_view stop) const {
+            if (stop_to_buses.count(stop))
+                return stop_to_buses.at(stop);
+            else {
+                static std::set<std::string_view> s;
+                return s;
+            }
+        }
+
 
         void TransportCatalogue::SetDistance(const Stop* s1, const Stop* s2, int distance) {
             stops_distance[{s1, s2}] = distance;
@@ -62,8 +77,8 @@ namespace transport_catalogue {
             else {
                 return 0;
             }
-        }                        
-    }    
+        }
+    }
 }
 
 
