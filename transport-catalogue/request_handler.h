@@ -23,10 +23,10 @@ namespace transport_catalogue {
 
     class RequestHandler {
     public:
-        // MapRenderer понадобится в следующей части итогового проекта
+        // MapRenderer РїРѕРЅР°РґРѕР±РёС‚СЃСЏ РІ СЃР»РµРґСѓСЋС‰РµР№ С‡Р°СЃС‚Рё РёС‚РѕРіРѕРІРѕРіРѕ РїСЂРѕРµРєС‚Р°
         RequestHandler(const catalogue::TransportCatalogue& db, const renderer::MapRenderer& renderer) :db_(db), renderer_(renderer) {}
 
-        // Возвращает информацию о маршруте (запрос Bus)
+        // Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РјР°СЂС€СЂСѓС‚Рµ (Р·Р°РїСЂРѕСЃ Bus)
         std::optional<BusStat> GetBusStat(const std::string_view& bus_name) const {
             const Bus& bus = db_.GetBus(bus_name);
             if (bus.is_exists) {
@@ -43,7 +43,7 @@ namespace transport_catalogue {
             else return {};
         }
 
-        // Возвращает маршруты, проходящие через остановку (запрос Stop)
+        // Р’РѕР·РІСЂР°С‰Р°РµС‚ РјР°СЂС€СЂСѓС‚С‹, РїСЂРѕС…РѕРґСЏС‰РёРµ С‡РµСЂРµР· РѕСЃС‚Р°РЅРѕРІРєСѓ (Р·Р°РїСЂРѕСЃ Stop)
         std::optional<std::set<std::string_view>> GetBusesByStop(const std::string_view& stop_name) const {
             const Stop* stop = db_.GetStop(stop_name);
             if (stop->is_exists) {
@@ -85,7 +85,7 @@ namespace transport_catalogue {
         }
 
     private:
-        // RequestHandler использует агрегацию объектов "Транспортный Справочник" и "Визуализатор Карты"
+        // RequestHandler РёСЃРїРѕР»СЊР·СѓРµС‚ Р°РіСЂРµРіР°С†РёСЋ РѕР±СЉРµРєС‚РѕРІ "РўСЂР°РЅСЃРїРѕСЂС‚РЅС‹Р№ РЎРїСЂР°РІРѕС‡РЅРёРє" Рё "Р’РёР·СѓР°Р»РёР·Р°С‚РѕСЂ РљР°СЂС‚С‹"
         const catalogue::TransportCatalogue& db_;
         const renderer::MapRenderer& renderer_;
     };
