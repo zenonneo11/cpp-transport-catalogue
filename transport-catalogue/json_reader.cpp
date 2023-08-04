@@ -1,6 +1,6 @@
 #include "json_reader.h"
 #include "json_builder.h"
-
+#include "transport_router.h"
 #include <string_view>
 #include <unordered_set>
 
@@ -18,12 +18,12 @@ namespace transport_catalogue {
                 const auto& stops = request_data.at("stops").AsArray();
 
                 for (const auto& stop : stops) {
-                    bus.stops.push_back(tc.GetStop(stop.AsString()));
+                    bus.stops.push_back(*tc.GetStop(stop.AsString()));
                 }
                 if (!bus.is_loop) {
 
                     for (auto begin = next(stops.rbegin()), end = stops.rend(); begin != end; ++begin) {
-                        bus.stops.push_back(tc.GetStop((*begin).AsString()));
+                        bus.stops.push_back(*tc.GetStop((*begin).AsString()));
                     }
                 }
                 tc.AddBus(std::move(bus));
@@ -57,6 +57,13 @@ namespace transport_catalogue {
                 }
 
             }
+        }
+
+        void ParseRoutingSettings(const json::Document& doc) {
+            const json::Dict& routing_settings = doc.GetRoot().AsDict().at("routing_settings").AsDict();
+            auto wait_time = routing_settings.at("bus_wait_time").AsInt();
+            auto velocity = routing_settings.at("bus_velocity").AsInt();
+            TransportRouter::SetRoutingSettings(wait_time, velocity);
         }
 
         void ParseRenderSettings(const json::Document& doc, renderer::MapRenderer& mr) {
@@ -103,7 +110,7 @@ namespace transport_catalogue {
                 std::string_view stop_name = request_data.at("name").AsString();
                 const Dict& stop_distances = request_data.at("road_distances").AsDict();
                 for (const auto& [other_stop, distance] : stop_distances) {
-                    tc.SetDistance(tc.GetStop(stop_name), tc.GetStop(other_stop), distance.AsInt());
+                    tc.SetDistance(*tc.GetStop(stop_name), *tc.GetStop(other_stop), distance.AsInt());
                 }
             }
             else {
@@ -196,6 +203,57 @@ namespace transport_catalogue {
                         .EndDict()
                         .Build()
                     );
+                }
+                else if (request.AsDict().at("type").AsString() == "Route") {
+                    auto id = request.AsDict().at("id").AsInt();
+                    std::string from = request.AsDict().at("from"s).AsString();
+                    std::string to = request.AsDict().at("to"s).AsString();
+                    if (auto resp = req_hndlr.GetRouteInfo(from, to)) {
+                        Array arr;
+                        for (const auto& edge : resp->edges){
+                            arr.push_back(
+                                Builder{}
+                                .StartDict()
+                                .Key("stop_name"s).Value(edge.from)
+                                .Key("time"s).Value(req_hndlr.GetRoutingSettings().first)
+                                .Key("type"s).Value("Wait"s)
+                                .EndDict()
+                                .Build()
+                            );
+                            arr.push_back(
+                                Builder{}
+                                .StartDict()
+                                .Key("bus"s).Value(edge.bus)
+                                .Key("span_count"s).Value(edge.stops_count)
+                                .Key("time"s).Value(edge.weight - req_hndlr.GetRoutingSettings().first)
+                                .Key("type"s).Value("Bus")
+                                .EndDict()
+                                .Build()
+                            );
+                        } 
+
+
+                        res.push_back(
+                            Builder{}
+                            .StartDict()
+                            .Key("items"s).Value(arr)
+                            .Key("request_id"s).Value(id)
+                            .Key("total_time"s).Value(resp->weight)
+                            .EndDict()
+                            .Build()
+                        );
+                    }
+                    else
+                    {
+                        res.push_back(
+                            Builder{}
+                            .StartDict()
+                            .Key("request_id"s).Value(id)
+                            .Key("error_message"s).Value("not found"s)
+                            .EndDict()
+                            .Build()
+                        );
+                    }
                 }
             }
             return res;

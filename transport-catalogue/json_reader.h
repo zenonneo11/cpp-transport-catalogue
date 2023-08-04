@@ -24,6 +24,8 @@ namespace transport_catalogue {
 
         void ParseRenderSettings(const json::Document& doc, renderer::MapRenderer& mr);
 
+        void ParseRoutingSettings(const json::Document& doc);
+
         Document HandleStatRequests(const Document& json_req, const transport_catalogue::RequestHandler& req_hndlr);
 
         std::vector<Node> ParseStatRequests(const Array& stat_requests, const RequestHandler& req_hndlr);

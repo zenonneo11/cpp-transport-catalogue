@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <optional>
 #include "transport_catalogue.h"
 
 namespace transport_catalogue {
@@ -31,24 +32,19 @@ namespace transport_catalogue {
             }
         }
 
-        const Stop* TransportCatalogue::GetStop(std::string_view stop) const {
-            if (stop_index_.count(stop)) {
-                return (stop_index_.at(stop));
-            }
+       
+        std::optional<const Stop*> TransportCatalogue::GetStop(std::string_view stop) const {
+            if (stop_index_.count(stop))
+                return stop_index_.at(stop);
             else
-            {
-                static Stop stop_;
-                stop_.is_exists = false;
-                stop_.name = stop;
-                return &stop_;
-            }
+                return std::nullopt;
         }
 
         std::vector<const Bus*> TransportCatalogue::GetAllBuses() const {
             std::vector<const Bus*> res;
             res.reserve(buses_.size());
             std::for_each(buses_.begin(), buses_.end(), [&res](const Bus& bus) { if (!bus.stops.empty()) res.push_back(&bus); });
-            std::sort(res.begin(), res.end(), [](const Bus* lhs, const Bus* rhs) { return lhs->name < rhs->name; });
+
             return res;
         }
 
@@ -78,6 +74,9 @@ namespace transport_catalogue {
                 return 0;
             }
         }
+
+
+
     }
 }
 

@@ -9,6 +9,7 @@
 #include "map_renderer.h"
 #include "transport_catalogue.h"
 #include "domain.h"
+#include "transport_router.h"
 #include <unordered_set>
 
 
@@ -23,8 +24,8 @@ namespace transport_catalogue {
 
     class RequestHandler {
     public:
-        // MapRenderer понадобится в следующей части итогового проекта
-        RequestHandler(const catalogue::TransportCatalogue& db, const renderer::MapRenderer& renderer) :db_(db), renderer_(renderer) {}
+
+        RequestHandler(const catalogue::TransportCatalogue& db, const renderer::MapRenderer& renderer, TransportRouter& tr) :db_(db), renderer_(renderer), tr_(tr) {}
 
         // Возвращает информацию о маршруте (запрос Bus)
         std::optional<BusStat> GetBusStat(const std::string_view& bus_name) const {
@@ -44,20 +45,29 @@ namespace transport_catalogue {
         }
 
         // Возвращает маршруты, проходящие через остановку (запрос Stop)
-        std::optional<std::set<std::string_view>> GetBusesByStop(const std::string_view& stop_name) const {
-            const Stop* stop = db_.GetStop(stop_name);
-            if (stop->is_exists) {
+        std::optional<std::set<std::string_view>> GetBusesByStop
+        (std::string_view stop_name) const {
+            if (db_.GetStop(stop_name))
                 return { db_.GetBusesForStop(stop_name) };
+            else
+                return std::nullopt;
+        }
+
+        std::optional<TransportRouter::RouteInfo> GetRouteInfo(std::string_view from, std::string_view to) const {
+            if (db_.GetStop(from) && db_.GetStop(to)&& tr_.GetExistsVertexId(*db_.GetStop(from))&& tr_.GetExistsVertexId(*db_.GetStop(to))) {
+                return tr_.GetRouteInfo(*tr_.GetExistsVertexId(*db_.GetStop(from)), *tr_.GetExistsVertexId(*db_.GetStop(to)));
             }
             else
             {
-                return {};
+                return std::nullopt;
             }
         }
+
 
         svg::Document RenderMap() const {
 
             std::vector<const Bus*> all_buses = db_.GetAllBuses();
+            std::sort(all_buses.begin(), all_buses.end(), [](const Bus* lhs, const Bus* rhs) { return lhs->name < rhs->name; });
             std::vector<std::vector<const Stop*>> buses_stops;
             buses_stops.reserve(all_buses.size());
 
@@ -84,10 +94,15 @@ namespace transport_catalogue {
             return map;
         }
 
+        std::pair<int, double> GetRoutingSettings() const{
+            return tr_.GetRoutingSettings();
+        }
+        
     private:
-        // RequestHandler использует агрегацию объектов "Транспортный Справочник" и "Визуализатор Карты"
+
         const catalogue::TransportCatalogue& db_;
         const renderer::MapRenderer& renderer_;
+        const TransportRouter& tr_;
     };
 }
 

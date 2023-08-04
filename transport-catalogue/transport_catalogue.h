@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <optional>
 #include <vector>
 #include <set>
 #include <string>
@@ -20,7 +21,7 @@ namespace transport_catalogue {
 
             const Bus& GetBus(std::string_view bus) const;
 
-            const Stop* GetStop(std::string_view stop) const;
+            std::optional<const Stop*> GetStop(std::string_view stop) const;
 
             const std::set<std::string_view>& GetBusesForStop(std::string_view stop) const;
             
@@ -31,7 +32,10 @@ namespace transport_catalogue {
             std::vector<const Bus*> GetAllBuses() const;
 
 
+
             private:
+
+
             std::deque<Stop> stops_;
             std::deque<Bus> buses_;
 

@@ -57,17 +57,6 @@ namespace json {
         };
 
 
-        class EndContext : public BaseContext {
-            EndContext(Builder& builder) : BaseContext(builder) {}
-            BaseContext StartArray() = delete;
-            BaseContext StartDict() = delete;
-            BaseContext EndArray() = delete;
-            BaseContext EndDict() = delete;
-            BaseContext Key(std::string key) = delete;
-
-        };
-
-
         class KeyContext : public BaseContext {
         public:
             KeyContext(Builder& builder) : BaseContext(builder) {}

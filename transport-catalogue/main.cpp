@@ -1,5 +1,6 @@
 #include "json_reader.h"
 #include "request_handler.h"
+#include "transport_router.h"
 #include <sstream>
 
 using namespace transport_catalogue;
@@ -8,7 +9,6 @@ using namespace transport_catalogue::renderer;
 
 using namespace std;
 int main() {
-
     TransportCatalogue tc;
 
     Document doc(Load(cin));
@@ -16,8 +16,12 @@ int main() {
     ParseRenderSettings(doc, map_rdr);
 
     ParseBaseRequests(doc, tc);
+  
+    ParseRoutingSettings(doc);
 
-    RequestHandler req_hndlr(tc, map_rdr);
+    TransportRouter tr(tc);
+
+    RequestHandler req_hndlr( tc, map_rdr, tr );
 
 
     Print(HandleStatRequests(doc, req_hndlr), std::cout);
